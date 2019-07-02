@@ -1,5 +1,3 @@
-<!DOCTYPE html>
-<html>
 <?php
 /*
 Plugin Name: WordPress Service Schedule Plugin
@@ -9,14 +7,47 @@ Version:     1.0.0
 Author:      Connor Clarkes
 */
 
-$sql = "CREATE TABLE VehicleService(
-    id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY, 
-    model_year INT(4)
-    make VARCHAR(20)
+$servername = "localhost";
+$username = "wordpressuser";
+$password = "password";
+$dbname = "wordpress";
+
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+} 
+
+$sql = "CREATE TABLE IF NOT EXISTS VehicleService( 
+    model_year INT(4),
+    make VARCHAR(20),
     model VARCHAR(20),
-    engine TIMESTAMP,
-    mileage INT(6),
+    engine VARCHAR(10),
+    mileage VARCHAR(15),
     service_item VARCHAR(50)
     )";
 
+$import = <<<eof
+    LOAD DATA LOCAL INFILE '/var/lib/mysql-files/csv/service.csv' 
+    INTO TABLE VehicleService
+    FIELDS TERMINATED BY ','
+    ENCLOSED BY '"'
+    LINES TERMINATED BY '\r\n'
+eof;
+
+if ($conn->query($sql) === TRUE) {
+    echo "Table VehicleService created successfully \n";
+} else {
+    echo "Error creating table: " . $conn->error;
+}
+
+if ($conn->query($import) === TRUE) {
+    echo "Service info imported successfully \n";
+} else {
+    echo "Error importing data: " . $conn->error;
+}
+
+
+$conn->close();
 ?>
